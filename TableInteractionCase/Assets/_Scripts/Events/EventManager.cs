@@ -13,5 +13,8 @@ namespace TableInteraction.Events
         public delegate void CharacterEnterQueueHandler(Character character);
         public static CharacterEnterQueueHandler OnCharacterEnterQueue;
 
+        public delegate Vector3 OnGetTargetPositionHandler();
+        public static OnGetTargetPositionHandler OnGetTargetPosition;
+
     }
 }

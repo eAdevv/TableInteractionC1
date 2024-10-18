@@ -1,30 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TableInteraction.Singleton;
 using TableInteraction.Events;
-using UnityEditor.Search;
-using UnityEngine.AI;
 using UnityEngine.UI;
-using DG.Tweening;
-using Unity.VisualScripting.Antlr3.Runtime.Tree;
 
 namespace TableInteraction.CoreLoop
 {
-    public class GameManager : MonoSingleton<GameManager>
+    public class GameManager : MonoBehaviour
     {
         [SerializeField]private List<Character> characters = new List<Character>();
         private Queue<Character> tableQueue = new Queue<Character>();
         private List<float> usedSpeeds = new List<float>();
 
         private bool isQueueBusy;
-        public Transform targetPosition;
-        public Slider processSlider;
+        [SerializeField] private Transform targetPosition;
+        [SerializeField] private Slider processSlider;
 
 
         private void OnEnable()
         {
             EventManager.OnGetSpeed += GetCharacterSpeed;
+            EventManager.OnGetTargetPosition += GetTargetPos;
             EventManager.OnCharacterEnterQueue += CharacterEnterQueue;
         }
         
@@ -32,7 +28,13 @@ namespace TableInteraction.CoreLoop
         private void OnDisable()
         {
             EventManager.OnGetSpeed -= GetCharacterSpeed;
+            EventManager.OnGetTargetPosition -= GetTargetPos;
             EventManager.OnCharacterEnterQueue -= CharacterEnterQueue;
+        }
+
+        private void Start()
+        {
+            
         }
         private void Update()
         {
@@ -71,7 +73,7 @@ namespace TableInteraction.CoreLoop
         private void CharacterEnterQueue(Character character)
         {
             tableQueue.Enqueue(character);
-            targetPosition.position = targetPosition.position - new Vector3(0, 0, 1);
+            targetPosition.position = targetPosition.position - Vector3.forward;
             StartCoroutine(ProcessQueue(character));
         }
 
@@ -80,12 +82,12 @@ namespace TableInteraction.CoreLoop
         {
             if (!isQueueBusy)
             {
+                float elapsedTime = 0f;
+                float waitTime = 5f;
+
                 isQueueBusy = true;
                 processSlider.gameObject.SetActive(true);
-
-                float waitTime = 5f;
                 processSlider.value = 0;
-                float elapsedTime = 0f;
 
                 while (elapsedTime < waitTime)
                 {
@@ -102,15 +104,15 @@ namespace TableInteraction.CoreLoop
 
         private void RemoveFromQueue(Character character)
         {
+            StartCoroutine(character.CharacterRunAwayFromTable());
             processSlider.gameObject.SetActive(false);
-            isQueueBusy = false;
-            tableQueue.Dequeue();
-            Destroy(character.gameObject);
+            tableQueue.Dequeue();           
             ReOrganizeQueue();
         }
         private void ReOrganizeQueue()
         {
-            targetPosition.position = targetPosition.position + new Vector3(0, 0, 1);
+            isQueueBusy = false;
+            targetPosition.position = targetPosition.position + Vector3.forward;
 
             if (tableQueue.Count > 0)
             {
@@ -123,7 +125,7 @@ namespace TableInteraction.CoreLoop
         }
 
 
-        public Vector3 TargetPos()
+        public Vector3 GetTargetPos()
         {
             return targetPosition.position;
         }
