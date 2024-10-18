@@ -116,11 +116,11 @@ namespace TableInteraction.CoreLoop
 
             if (tableQueue.Count > 0)
             {
-                StartCoroutine(ProcessQueue(tableQueue.Peek()));
                 foreach (Character character in tableQueue)
                 {
                     character.CharacterMoveInQueue();
                 }
+                StartCoroutine(ProcessQueue(tableQueue.Peek()));
             }
         }
 

@@ -65,7 +65,7 @@ namespace TableInteraction.CoreLoop
         public void CharacterMoveInQueue()
         {
             animator.SetBool(runningHash, true);
-            transform.DOMoveZ(transform.position.z + 1, 0.1f).OnComplete(()=> animator.SetBool(runningHash, false));
+            transform.DOMoveZ(transform.position.z + 1, 0.25f).OnComplete(()=> animator.SetBool(runningHash, false));
         }
  
         private void AIMove(Vector3 target)
@@ -86,7 +86,7 @@ namespace TableInteraction.CoreLoop
 
         public IEnumerator CharacterRunAwayFromTable()
         {
-            Vector3 ranmdomPosition = new Vector3(characterAgent.transform.position.x + 30f, 0, Random.Range(1f, 25f));
+            Vector3 ranmdomPosition = new Vector3(characterAgent.transform.position.x + 30f, characterAgent.transform.position.y, Random.Range(1f, 25f));
             AIMove(ranmdomPosition);
             characterAgent.stoppingDistance = 2f;
             yield return new WaitUntil(() => 
