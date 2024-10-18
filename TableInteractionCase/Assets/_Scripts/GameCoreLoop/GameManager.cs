@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TableInteraction.Singleton;
 using TableInteraction.Events;
-using UnityEngine.TextCore.Text;
+using UnityEditor.Search;
+
 namespace TableInteraction.CoreLoop
 {
     public class GameManager : MonoSingleton<GameManager>
@@ -13,6 +14,7 @@ namespace TableInteraction.CoreLoop
         private List<float> usedSpeeds = new List<float>();
 
         public Transform targetPosition;
+       
 
         private void OnEnable()
         {
@@ -47,23 +49,28 @@ namespace TableInteraction.CoreLoop
             return speed;
         }
 
-        void MoveCharacter()
+        private void MoveCharacter()
         {
             Character character = characters[Random.Range(0, characters.Count)];
 
             if (!character.IsMoving)
             {
-                character.SetTargetMoveTo(targetPosition.position);
+                character.IsMoving = true;
             }
 
             characters.Remove(character);
-            targetPosition.position = targetPosition.position - new Vector3(0, 0, 1);
+
         }
 
         private void CharacterEnterQueue(Character character)
         {
             tableQueue.Enqueue(character);
+            targetPosition.position = targetPosition.position - new Vector3(0, 0, 1);
         }
 
+        public Vector3 TargetPos()
+        {
+            return targetPosition.position;
+        }
     }
 }

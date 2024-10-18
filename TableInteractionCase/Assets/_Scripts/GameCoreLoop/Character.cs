@@ -23,6 +23,7 @@ namespace TableInteraction.CoreLoop
         {
             if (IsMoving)
             {
+                targetPosition = GameManager.Instance.TargetPos();
                 transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
 
                 if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
@@ -33,10 +34,6 @@ namespace TableInteraction.CoreLoop
             }
         }
 
-        public void SetTargetMoveTo(Vector3 target)
-        {
-            targetPosition = target;
-            IsMoving = true;
-        }
+       
     }
 }
