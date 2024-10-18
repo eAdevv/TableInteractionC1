@@ -38,12 +38,15 @@ namespace TableInteraction.CoreLoop
         }
         private void Update()
         {
+            // Space key triggers movement.
             if (Input.GetKeyDown(KeyCode.Space) && characters.Count > 0)
             {
                 MoveCharacter();
             }
         }
 
+        // Since the characters should not have the same speed,
+        // it is checked whether there is a previously assigned speed in the given range.
         private float GetCharacterSpeed()
         {
             float speed;
@@ -78,6 +81,7 @@ namespace TableInteraction.CoreLoop
         }
 
 
+        
         private IEnumerator ProcessQueue(Character character)
         {
             if (!isQueueBusy)
@@ -101,7 +105,8 @@ namespace TableInteraction.CoreLoop
 
             yield return null;
         }
-
+        // The character at the head of the queue is removed from the queue and its replacement enters the table process.
+        // If there is no character at the beginning of the queue, the process is terminated.
         private void RemoveFromQueue(Character character)
         {
             StartCoroutine(character.CharacterRunAwayFromTable());
