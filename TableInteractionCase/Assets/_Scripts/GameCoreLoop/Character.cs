@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using TableInteraction.Events;
 using UnityEngine;
+using UnityEngine.AI;
+using DG.Tweening;
 
 namespace TableInteraction.CoreLoop
 {
@@ -10,13 +12,16 @@ namespace TableInteraction.CoreLoop
         private float speed;
         private bool isMoving;
         private Vector3 targetPosition;
-
+        private NavMeshAgent characterAgent;
+        private NavMeshObstacle characterObstacle;
         public float Speed { get => speed; set => speed = value; }
         public bool IsMoving { get => isMoving; set => isMoving = value; }
 
         private void Start()
         {
-            speed = EventManager.OnGetSpeed.Invoke();
+            characterAgent = GetComponent<NavMeshAgent>();
+            characterObstacle = GetComponent<NavMeshObstacle>();
+            characterAgent.speed = EventManager.OnGetSpeed.Invoke();
         }
 
         private void Update()
@@ -24,16 +29,36 @@ namespace TableInteraction.CoreLoop
             if (IsMoving)
             {
                 targetPosition = GameManager.Instance.TargetPos();
-                transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
 
-                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                characterAgent.enabled = true;
+                characterObstacle.enabled = false;
+                characterAgent.SetDestination(targetPosition);
+
+                if (!characterAgent.pathPending && characterAgent.remainingDistance <= characterAgent.stoppingDistance)
                 {
-                    IsMoving = false;
-                    EventManager.OnCharacterEnterQueue?.Invoke(this);
+                    CharacterReachActivity();
                 }
             }
         }
 
-       
+        private void CharacterReachActivity()
+        {
+            characterAgent.enabled = false;
+            characterObstacle.enabled = true;
+            IsMoving = false;
+            EventManager.OnCharacterEnterQueue?.Invoke(this);
+
+            transform.DOMove(targetPosition, 0.25f).OnComplete(() =>
+            {
+                transform.rotation = Quaternion.Euler(0, 0, 0);
+            });
+        }
+
+        public void CharacterMoveInQueue()
+        {
+            transform.DOMoveZ(transform.position.z + 1, 0.1f);
+        }
+
+
     }
 }
