@@ -1,6 +1,6 @@
 using UnityEngine;
-using DG.Tweening;
-
+using System.Collections.Generic;
+using System.Collections;
 namespace TableInteraction.CameraSettings
 {
     public class CameraController : MonoBehaviour
@@ -12,9 +12,29 @@ namespace TableInteraction.CameraSettings
         private void Awake()
         {
             myCamera = Camera.main;
-            myCamera.transform.DOMove(cameraPoint.transform.position, 3f);
-            Vector3 rotation = cameraPoint.rotation.eulerAngles;
-            myCamera.transform.DORotate(rotation,3f);
+            StartCoroutine(SmoothCameraCoroutine());
         }
+
+        private IEnumerator SmoothCameraCoroutine()
+        {
+            Quaternion rotation = cameraPoint.rotation;
+            float moveDuration = 5f;
+
+            float time = 0f;
+
+            while (time < moveDuration)
+            {
+                myCamera.transform.position = Vector3.MoveTowards(myCamera.transform.position, cameraPoint.transform.position,
+                    (time / moveDuration) * Vector3.Distance(myCamera.transform.position, cameraPoint.transform.position));
+
+                myCamera.transform.rotation = Quaternion.Slerp(transform.rotation, rotation, time / moveDuration);
+
+                time += Time.deltaTime;
+                yield return null;
+            }
+            myCamera.transform.position = cameraPoint.transform.position;
+            myCamera.transform.rotation = rotation;
+        }
+
     }
 }

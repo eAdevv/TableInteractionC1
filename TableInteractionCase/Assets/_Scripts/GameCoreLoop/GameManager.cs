@@ -86,17 +86,17 @@ namespace TableInteraction.CoreLoop
         {
             if (!isQueueBusy)
             {
-                float elapsedTime = 0f;
+                float time = 0f;
                 float waitTime = 5f;
 
                 isQueueBusy = true;
                 processSlider.gameObject.SetActive(true);
                 processSlider.value = 0;
 
-                while (elapsedTime < waitTime)
+                while (time < waitTime)
                 {
-                    elapsedTime += Time.deltaTime;
-                    processSlider.value = Mathf.Clamp01(elapsedTime / waitTime);
+                    time += Time.deltaTime;
+                    processSlider.value = Mathf.Clamp01(time / waitTime);
                     yield return null;
                 }
 
@@ -123,7 +123,7 @@ namespace TableInteraction.CoreLoop
             {
                 foreach (Character character in tableQueue)
                 {
-                    character.CharacterMoveInQueue();
+                    StartCoroutine (character.CharacterMoveInQueueCoroutine());
                 }
                 StartCoroutine(ProcessQueue(tableQueue.Peek()));
             }

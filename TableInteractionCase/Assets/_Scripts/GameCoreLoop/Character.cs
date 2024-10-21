@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TableInteraction.Events;
 using UnityEngine;
 using UnityEngine.AI;
-using DG.Tweening;
 
 namespace TableInteraction.CoreLoop
 {
@@ -13,6 +12,7 @@ namespace TableInteraction.CoreLoop
         private bool isMoving;
         private Vector3 targetPosition;
 
+     
         [Header("AI Settings")]
         private NavMeshAgent characterAgent;
         private NavMeshObstacle characterObstacle;
@@ -62,21 +62,48 @@ namespace TableInteraction.CoreLoop
         {
             AIStop();
             EventManager.OnCharacterEnterQueue?.Invoke(this);
-
-            // Queue correction.
-            transform.DOMove(targetPosition, 0.25f).OnComplete(() =>
-            {
-                transform.rotation = Quaternion.Euler(0, 0, 0);
-                animator.SetBool(runningHash, false);
-            });
+            StartCoroutine(SmoothEnterQueueCoroutine());
         }
-        
+        private IEnumerator SmoothEnterQueueCoroutine()
+        {
+            float moveDuration = 0.25f;
+
+            float elapsedTime = 0f;
+
+            while (elapsedTime < moveDuration)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, targetPosition,
+                    (elapsedTime / moveDuration) * Vector3.Distance(transform.position, targetPosition));
+
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, 0), elapsedTime / moveDuration);
+
+                elapsedTime += Time.deltaTime;
+                yield return null; 
+            }
+
+            transform.position = targetPosition;
+            transform.rotation = Quaternion.Euler(0, 0, 0);
+            animator.SetBool(runningHash, false);
+        }
 
         // It allows characters to take a step forward when one person is missing from the queue.
-        public void CharacterMoveInQueue()
+        public IEnumerator CharacterMoveInQueueCoroutine()
         {
             animator.SetBool(runningHash, true);
-            transform.DOMoveZ(transform.position.z + 1, 0.25f).OnComplete(()=> animator.SetBool(runningHash, false));
+
+            Vector3 targetPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z + 1);
+            float elapsedTime = 0f;
+            float duration = 0.25f;
+
+            while (elapsedTime < duration)
+            {
+                transform.position = Vector3.Lerp(transform.position, targetPosition, elapsedTime / duration);
+                elapsedTime += Time.deltaTime;
+                yield return null;
+            }
+
+            transform.position = targetPosition;
+            animator.SetBool(runningHash, false);
         }
 
         #endregion
